@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useTransition } from "react";
+import { DoctorChips } from "@/components/DoctorChips";
 
 export function AppointmentsFilters({
   q,
@@ -39,6 +40,9 @@ export function AppointmentsFilters({
   }
 
   const hasFilters = Boolean(q || doctor || status);
+  const preserve: Record<string, string> = {};
+  if (q) preserve.q = q;
+  if (status) preserve.status = status;
 
   return (
     <div className="card space-y-3 !py-3">
@@ -75,43 +79,11 @@ export function AppointmentsFilters({
           </button>
         )}
       </form>
-      {doctors.length > 0 && (
-        <div>
-          <div className="mb-1.5 text-xs font-medium text-slate-600">
-            Doctor
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              onClick={() => push({ doctor: "" })}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium border ${
-                !doctor
-                  ? "border-teal-600 bg-teal-50 text-teal-800"
-                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              All
-            </button>
-            {doctors.map((d) => {
-              const active = doctor.toLowerCase() === d.toLowerCase();
-              return (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => push({ doctor: active ? "" : d })}
-                  className={`rounded-full px-2.5 py-1 text-xs font-medium border ${
-                    active
-                      ? "border-teal-600 bg-teal-50 text-teal-800"
-                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  {d}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <DoctorChips
+        doctors={doctors}
+        doctor={doctor}
+        preserveParams={preserve}
+      />
       <p className="text-[11px] text-slate-400">
         Naam ya phone se dhoondo · doctor chip se filter
       </p>

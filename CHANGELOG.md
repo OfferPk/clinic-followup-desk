@@ -6,6 +6,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](ht
 
 ## [Unreleased]
 
+### Added
+
+- **Status board: hide closed by default** — `/board` shows `requested | confirmed | no_show` only; `?closed=1` (or `show=all`) reveals completed + cancelled via **Show closed** toggle. Empty clinic still shows OnboardingChecklist when total appointments === 0.
+- **Day list doctor filter chips** — `/day?date=YYYY-MM-DD&doctor=…` (optional, case-insensitive on `doctor_name`); shared `DoctorChips` with appointments list; clear doctor keeps date.
+- **No-show rebook WhatsApp chip** — `rebookMessage(patient_name, slotLabel)` (EN + Roman Urdu); **WA Rebook** on no-show queue + appointment detail when status is `no_show`; still manual `wa.me`, no WABA.
+
 ## [0.1.1] — 2026-09-28
 
 ### Added
@@ -32,4 +38,4 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](ht
 - Owner Team page / API to create receptionist users only.
 - Appointments CRUD with optional `doctor_name`; status board; day list; queues (confirm / remind / no-show).
 - WhatsApp `wa.me` buttons; append-only notes; dashboard counts; owner CSV export.
-- Seed script + demo logins; GUIDE-roman-urdu; product docs.
+- Seed script + GUIDE-roman-urdu; product docs.

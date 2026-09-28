@@ -2,35 +2,62 @@ import Link from "next/link";
 import { getSessionUser } from "@/lib/auth";
 import { listAppointments } from "@/lib/appointments";
 import { formatSlot } from "@/lib/format";
-import { STATUS_LABELS, STATUSES, type AppointmentStatus } from "@/lib/types";
+import { STATUS_LABELS, type AppointmentStatus } from "@/lib/types";
+import {
+  boardVisibleStatuses,
+  parseBoardShowClosed,
+} from "@/lib/board-filter";
 import { StatusBadge } from "@/components/StatusBadge";
 import { BoardActions } from "@/components/BoardActions";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 
 export const dynamic = "force-dynamic";
 
-export default async function BoardPage() {
+type Props = {
+  searchParams: Promise<{ closed?: string; show?: string }>;
+};
+
+export default async function BoardPage({ searchParams }: Props) {
   const user = (await getSessionUser())!;
+  const sp = await searchParams;
+  const showClosed = parseBoardShowClosed(sp);
+  const visibleStatuses = boardVisibleStatuses(showClosed);
   const all = listAppointments();
   const byStatus = Object.fromEntries(
-    STATUSES.map((s) => [s, all.filter((a) => a.status === s)])
+    visibleStatuses.map((s) => [s, all.filter((a) => a.status === s)])
   ) as Record<AppointmentStatus, typeof all>;
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-xl font-bold">Status board</h1>
-        <Link href="/appointments/new" className="btn-primary">
-          + New
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          {showClosed ? (
+            <Link href="/board" className="btn-secondary !text-xs">
+              Hide closed
+            </Link>
+          ) : (
+            <Link href="/board?closed=1" className="btn-secondary !text-xs">
+              Show closed
+            </Link>
+          )}
+          <Link href="/appointments/new" className="btn-primary">
+            + New
+          </Link>
+        </div>
       </div>
+      <p className="text-sm text-slate-500">
+        {showClosed
+          ? "Showing all columns including completed + cancelled."
+          : "Active only (requested · confirmed · no-show). Closed hide hain — Show closed se dekho."}
+      </p>
       <OnboardingChecklist
         show={all.length === 0}
         userId={user.id}
         isOwner={user.role === "owner"}
       />
       <div className="flex gap-3 overflow-x-auto pb-2">
-        {STATUSES.map((status) => (
+        {visibleStatuses.map((status) => (
           <div
             key={status}
             className="min-w-[220px] max-w-[260px] flex-1 rounded-xl border border-slate-200 bg-slate-50/80 p-2"

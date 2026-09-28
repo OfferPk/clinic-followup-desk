@@ -131,4 +131,19 @@ describe("listAppointments q + doctor + status filters", () => {
   it("returns empty for unmatched doctor", () => {
     expect(listAppointments({ doctor: "Nobody" })).toHaveLength(0);
   });
+
+  it("filters by date + doctor together (day list contract)", () => {
+    const date = "2026-09-28";
+    const ayesha = listAppointments({
+      date,
+      doctor: "Dr. Ayesha Khan",
+    });
+    expect(ayesha.map((r) => r.id).sort()).toEqual([idHassan, idOmar].sort());
+    const bilal = listAppointments({
+      date,
+      doctor: "dr. bilal ahmed",
+    });
+    expect(bilal.map((r) => r.id)).toEqual([idSana]);
+    expect(listAppointments({ date, doctor: "Nobody" })).toHaveLength(0);
+  });
 });

@@ -6,6 +6,7 @@ import {
   preparePhoneForStorage,
   rewritePkLocalPhone,
   confirmMessage,
+  rebookMessage,
 } from "@/lib/phone";
 
 describe("normalizePhoneDigits", () => {
@@ -57,5 +58,25 @@ describe("phoneHint + confirmMessage", () => {
   });
   it("builds confirm text", () => {
     expect(confirmMessage("Ali", "Mon 10am")).toMatch(/Ali/);
+  });
+});
+
+describe("rebookMessage + URL encoding", () => {
+  it("builds rebook text with name, slot, and Roman Urdu cue", () => {
+    const msg = rebookMessage("Fatima", "Mon 10:00 AM");
+    expect(msg).toMatch(/Fatima/);
+    expect(msg).toMatch(/Mon 10:00 AM/);
+    expect(msg).toMatch(/Dubara slot|Rebook/i);
+  });
+
+  it("encodes rebook prefill in wa.me URL", () => {
+    const msg = rebookMessage("Ali & Co", "Tue 3:00 PM");
+    const url = toWhatsAppUrl("923001112233", msg);
+    expect(url).toBeTruthy();
+    expect(url!.startsWith("https://wa.me/923001112233?text=")).toBe(true);
+    const encoded = url!.slice("https://wa.me/923001112233?text=".length);
+    expect(encoded).toBe(encodeURIComponent(msg.trim()));
+    expect(decodeURIComponent(encoded)).toBe(msg.trim());
+    expect(encoded).toContain("%26"); // & in "Ali & Co"
   });
 });

@@ -2,7 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAppointment, listNotes } from "@/lib/appointments";
 import { formatSlot } from "@/lib/format";
-import { confirmMessage, remindMessage } from "@/lib/phone";
+import {
+  confirmMessage,
+  remindMessage,
+  rebookMessage,
+} from "@/lib/phone";
 import { StatusBadge } from "@/components/StatusBadge";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { AppointmentEditor } from "@/components/AppointmentEditor";
@@ -43,6 +47,13 @@ export default async function AppointmentDetailPage({ params }: Props) {
             text={remindMessage(appointment.patient_name, slotLabel)}
             label="WA Remind"
           />
+          {appointment.status === "no_show" && (
+            <WhatsAppButton
+              phone={appointment.phone}
+              text={rebookMessage(appointment.patient_name, slotLabel)}
+              label="WA Rebook"
+            />
+          )}
           <WhatsAppButton phone={appointment.phone} label="WhatsApp" />
         </div>
       </div>

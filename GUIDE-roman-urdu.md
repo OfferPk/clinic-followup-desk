@@ -51,9 +51,10 @@ Production check: `npm test` phir `npm run build`
 
 ### Status board (Kanban)
 - Kahan: `/board`
-- Columns: requested | confirmed | completed | no_show | cancelled
+- Default: sirf **active** columns (requested | confirmed | no_show). Completed / cancelled hide.
+- **Show closed** (`?closed=1`) se completed + cancelled dikhte hain; **Hide closed** wapas active.
 - Status dropdown se badlo.
-- Result: pipeline clear.
+- Result: aaj ka confirm/remind kaam noise ke baghair.
 
 ### Appointments list + new
 - Kahan: `/appointments`, `/appointments/new`
@@ -63,17 +64,19 @@ Production check: `npm test` phir `npm run build`
 
 ### Appointment detail + notes
 - Kahan: `/appointments/[id]`
-- Edit, delete, WhatsApp Confirm / Remind buttons, append-only notes.
+- Edit, delete, WhatsApp Confirm / Remind (aur no_show pe **Rebook**) buttons, append-only notes.
 - Result: history desk pe rehti hai.
 
 ### Day list
-- Kahan: `/day`
-- Date picker se us din ke appointments.
-- Result: aaj / kisi din ka schedule list.
+- Kahan: `/day` (`?date=YYYY-MM-DD&doctor=…`)
+- Date picker + **doctor filter chips** (appointments list jaisi). Clear doctor → date same rehti hai.
+- Result: multi-doctor clinic mein subah ki list clinician-wise.
 
 ### Queues — Confirm / Remind / No-show
 - Kahan: `/queues/confirm`, `/queues/remind`, `/queues/no-show`
-- Prefilled WhatsApp text ke sath button.
+- Prefilled WhatsApp text ke sath button (manual `wa.me`, WABA nahi).
+- No-show pe **WA Rebook** chip — dubara slot / rebook message.
+- Appointment detail pe jab status `no_show` ho to bhi WA Rebook dikhta hai.
 - Result: follow-up queue khali karo.
 
 ### Team (owner)

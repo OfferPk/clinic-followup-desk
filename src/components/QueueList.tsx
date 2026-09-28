@@ -3,7 +3,11 @@ import type { Appointment } from "@/lib/types";
 import { formatSlot } from "@/lib/format";
 import { StatusBadge } from "@/components/StatusBadge";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
-import { confirmMessage, remindMessage } from "@/lib/phone";
+import {
+  confirmMessage,
+  remindMessage,
+  rebookMessage,
+} from "@/lib/phone";
 
 export function QueueList({
   appointments,
@@ -21,7 +25,9 @@ export function QueueList({
             ? confirmMessage(a.patient_name, slotLabel)
             : mode === "remind"
               ? remindMessage(a.patient_name, slotLabel)
-              : `Assalam o Alaikum ${a.patient_name}, aap miss ho gaye thay — naya slot book karna hai? — ClinicDesk`;
+              : rebookMessage(a.patient_name, slotLabel);
+        const label =
+          mode === "no_show" ? "WA Rebook" : "Open WhatsApp";
         return (
           <div
             key={a.id}
@@ -41,7 +47,7 @@ export function QueueList({
                 {a.reason && <span>· {a.reason}</span>}
               </div>
             </div>
-            <WhatsAppButton phone={a.phone} text={text} label="Open WhatsApp" />
+            <WhatsAppButton phone={a.phone} text={text} label={label} />
           </div>
         );
       })}

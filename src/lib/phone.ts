@@ -55,11 +55,16 @@ export function phoneHint(phone: string): string | null {
 export const PHONE_REQUIRED_HINT =
   "Valid phone with country code required (e.g. 923001234567)";
 
-/** Prefill templates for confirm / remind. */
+/** Prefill templates for confirm / remind / rebook. */
 export function confirmMessage(patientName: string, slotLabel: string): string {
   return `Assalam o Alaikum ${patientName}, yeh ${slotLabel} ke appointment ki confirmation hai. Please reply HAAN to confirm. — ClinicDesk`;
 }
 
 export function remindMessage(patientName: string, slotLabel: string): string {
   return `Assalam o Alaikum ${patientName}, reminder: aapka appointment ${slotLabel} hai. Baraye meherbani on time aayein. — ClinicDesk`;
+}
+
+/** No-show recovery: invite patient to rebook (EN + Roman Urdu). Manual wa.me only. */
+export function rebookMessage(patientName: string, slotLabel: string): string {
+  return `Assalam o Alaikum ${patientName}, aap miss ho gaye thay (${slotLabel}). Dubara slot book karna hai? Rebook anytime — ClinicDesk`;
 }
