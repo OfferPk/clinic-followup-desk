@@ -16,12 +16,16 @@ export async function GET(req: NextRequest) {
     await requireUser();
     const status = req.nextUrl.searchParams.get("status") as AppointmentStatus | null;
     const date = req.nextUrl.searchParams.get("date");
+    const q = req.nextUrl.searchParams.get("q") || undefined;
+    const doctor = req.nextUrl.searchParams.get("doctor") || undefined;
     if (status && !STATUSES.includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
     const appointments = listAppointments({
       status: status || undefined,
       date: date || undefined,
+      q,
+      doctor,
     });
     logRequest({
       requestId,

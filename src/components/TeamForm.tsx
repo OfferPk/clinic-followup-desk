@@ -45,8 +45,8 @@ export function TeamForm() {
         <input name="email" type="email" className="input" required />
       </div>
       <div>
-        <label className="label">Password</label>
-        <input name="password" type="password" className="input" required minLength={6} />
+        <label className="label">Password (min 10)</label>
+        <input name="password" type="password" className="input" required minLength={10} />
       </div>
       <input type="hidden" name="role" value="receptionist" />
       {error && <p className="text-sm text-red-600">{error}</p>}

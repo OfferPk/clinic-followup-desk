@@ -1,11 +1,15 @@
 import Link from "next/link";
+import { getSessionUser } from "@/lib/auth";
 import { getDashboardStats } from "@/lib/appointments";
 import { STATUS_LABELS, STATUSES } from "@/lib/types";
+import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 
 export const dynamic = "force-dynamic";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const user = (await getSessionUser())!;
   const stats = getDashboardStats();
+  const showChecklist = stats.total === 0;
 
   return (
     <div className="space-y-4">
@@ -15,6 +19,12 @@ export default function DashboardPage() {
           + New appointment
         </Link>
       </div>
+
+      <OnboardingChecklist
+        show={showChecklist}
+        userId={user.id}
+        isOwner={user.role === "owner"}
+      />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Confirm today" value={stats.confirm_today} href="/queues/confirm" tone="amber" />

@@ -29,6 +29,16 @@ export function getDb(): Database.Database {
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
   migrate(db);
+  // Harden file mode when the FS supports chmod (ignore errors on unsupported FS).
+  // Skip vitest temp DBs (basename test-*) to avoid parallel-suite races.
+  try {
+    const base = path.basename(dbPath);
+    if (fs.existsSync(dbPath) && !base.startsWith("test-")) {
+      fs.chmodSync(dbPath, 0o600);
+    }
+  } catch {
+    /* ignore */
+  }
   dbInstance = db;
   return db;
 }

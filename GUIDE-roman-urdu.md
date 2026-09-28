@@ -40,11 +40,13 @@ Production check: `npm test` phir `npm run build`
 ### Login / Register
 - Kahan: `/login`, `/register`
 - Pehla user **owner** banta hai. Baqi staff Team se add hote hain.
+- Naya password **kam az kam 10 characters**. Zyada failed login → thodi der wait (429).
 - Result: Dashboard khulta hai.
 
 ### Dashboard
 - Kahan: `/dashboard`
 - Counts: confirm today, remind 24h, no-show, status breakdown.
+- Empty clinic: dismissible 3-step checklist (naya appointment → Confirm today → Team invite — owner).
 - Result: aaj ka kaam turant dikhta hai.
 
 ### Status board (Kanban)
@@ -56,7 +58,8 @@ Production check: `npm test` phir `npm run build`
 ### Appointments list + new
 - Kahan: `/appointments`, `/appointments/new`
 - Patient name, phone (03… ya 92…), optional reason, optional doctor, slot, duration.
-- Result: naya appointment save.
+- List pe search (naam / phone) aur doctor filter chips; Clear se filters hatao.
+- Result: naya appointment save; patient jaldi mil jata hai.
 
 ### Appointment detail + notes
 - Kahan: `/appointments/[id]`
@@ -75,7 +78,7 @@ Production check: `npm test` phir `npm run build`
 
 ### Team (owner)
 - Kahan: `/team`
-- Receptionist account banao.
+- Receptionist account banao (password min 10).
 - Result: shared desk — sab appointments sab staff ko dikhte hain.
 
 ### Export CSV (owner)

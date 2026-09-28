@@ -1,13 +1,16 @@
 import Link from "next/link";
+import { getSessionUser } from "@/lib/auth";
 import { listAppointments } from "@/lib/appointments";
 import { formatSlot } from "@/lib/format";
 import { STATUS_LABELS, STATUSES, type AppointmentStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/StatusBadge";
 import { BoardActions } from "@/components/BoardActions";
+import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 
 export const dynamic = "force-dynamic";
 
-export default function BoardPage() {
+export default async function BoardPage() {
+  const user = (await getSessionUser())!;
   const all = listAppointments();
   const byStatus = Object.fromEntries(
     STATUSES.map((s) => [s, all.filter((a) => a.status === s)])
@@ -21,6 +24,11 @@ export default function BoardPage() {
           + New
         </Link>
       </div>
+      <OnboardingChecklist
+        show={all.length === 0}
+        userId={user.id}
+        isOwner={user.role === "owner"}
+      />
       <div className="flex gap-3 overflow-x-auto pb-2">
         {STATUSES.map((status) => (
           <div

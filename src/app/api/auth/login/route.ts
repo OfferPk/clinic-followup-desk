@@ -6,13 +6,26 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 import { logRequest, newRequestId } from "@/lib/logger";
+import {
+  checkRateLimit,
+  clearRateLimit,
+  recordRateLimitFailure,
+} from "@/lib/rate-limit";
+
+function clientIp(req: NextRequest): string {
+  const xf = req.headers.get("x-forwarded-for");
+  if (xf) return xf.split(",")[0].trim() || "unknown";
+  return req.headers.get("x-real-ip") || "unknown";
+}
 
 export async function POST(req: NextRequest) {
   const requestId = newRequestId();
   const start = Date.now();
   try {
     const body = await req.json();
-    const email = String(body.email || "").trim().toLowerCase();
+    const email = String(body.email || "")
+      .trim()
+      .toLowerCase();
     const password = String(body.password || "");
 
     if (!email || !password) {
@@ -20,6 +33,24 @@ export async function POST(req: NextRequest) {
         { error: "Email and password are required" },
         { status: 400 }
       );
+    }
+
+    const ip = clientIp(req);
+    const ipKey = `login:ip:${ip}`;
+    const emailKey = `login:email:${email}`;
+    for (const key of [ipKey, emailKey]) {
+      const lim = checkRateLimit(key);
+      if (!lim.ok) {
+        return NextResponse.json(
+          {
+            error: `Too many failed login attempts. Try again in ${lim.retryAfterSec}s.`,
+          },
+          {
+            status: 429,
+            headers: { "Retry-After": String(lim.retryAfterSec) },
+          }
+        );
+      }
     }
 
     const db = getDb();
@@ -38,11 +69,16 @@ export async function POST(req: NextRequest) {
       | undefined;
 
     if (!user || !verifyPassword(password, user.password_hash)) {
+      recordRateLimitFailure(ipKey);
+      recordRateLimitFailure(emailKey);
       return NextResponse.json(
         { error: "Invalid email or password" },
         { status: 401 }
       );
     }
+
+    clearRateLimit(ipKey);
+    clearRateLimit(emailKey);
 
     const sessionId = createSession(user.id);
     await setSessionCookie(sessionId, req.headers);

@@ -12,6 +12,10 @@ const SELECT_APPT = `
 export function listAppointments(opts?: {
   status?: AppointmentStatus;
   date?: string; // YYYY-MM-DD in Karachi
+  /** Substring match on patient_name / phone (case-insensitive). */
+  q?: string;
+  /** Exact or case-insensitive match on doctor_name. */
+  doctor?: string;
 }): Appointment[] {
   const db = getDb();
   const clauses: string[] = [];
@@ -20,6 +24,17 @@ export function listAppointments(opts?: {
   if (opts?.status) {
     clauses.push("a.status = ?");
     params.push(opts.status);
+  }
+  if (opts?.q && opts.q.trim()) {
+    const like = `%${opts.q.trim().toLowerCase()}%`;
+    clauses.push(
+      "(lower(a.patient_name) LIKE ? OR lower(a.phone) LIKE ?)"
+    );
+    params.push(like, like);
+  }
+  if (opts?.doctor && opts.doctor.trim()) {
+    clauses.push("lower(COALESCE(a.doctor_name, '')) = lower(?)");
+    params.push(opts.doctor.trim());
   }
   if (opts?.date) {
     // Compare Karachi calendar date via substring of stored ISO — prefer filtering in JS if TZ tricky.
@@ -37,6 +52,19 @@ export function listAppointments(opts?: {
     rows = rows.filter((r) => karachiDateString(new Date(r.slot_start)) === opts.date);
   }
   return rows;
+}
+
+/** Distinct non-null doctor_name values for filter chips (shared desk). */
+export function listDistinctDoctors(): string[] {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT DISTINCT doctor_name FROM appointments
+       WHERE doctor_name IS NOT NULL AND trim(doctor_name) != ''
+       ORDER BY lower(doctor_name) ASC`
+    )
+    .all() as { doctor_name: string }[];
+  return rows.map((r) => r.doctor_name);
 }
 
 export function getAppointment(id: string): Appointment | null {

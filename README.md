@@ -34,16 +34,19 @@ Open http://localhost:3000
 - **[GUIDE-roman-urdu.md](./GUIDE-roman-urdu.md)** — Istemaal guide (Roman Urdu)
 - [docs/PRODUCT.md](./docs/PRODUCT.md) — Product overview
 - [STATUS.md](./STATUS.md) — Build / test status
+- [DEPLOYMENT.md](./DEPLOYMENT.md) — Build, rate limit, DB mode
+- [CHANGELOG.md](./CHANGELOG.md) — Unreleased / releases
 - PRD: `/workspace/factory/research/PRD-clinic-followup-desk.md`
 
 ## Features (MVP)
 
 - Auth (owner + receptionist), shared desk board
-- Appointments CRUD + optional doctor_name
+- Appointments CRUD + optional doctor_name; list search (`q`) + doctor filter chips
 - Status board (requested / confirmed / completed / no_show / cancelled)
 - Queues: confirm today, remind 24h, no-show
 - Day list, activity notes, one-tap `wa.me` with prefilled text
-- Dashboard counts, owner CSV export
+- Dashboard counts, empty-state 3-step checklist, owner CSV export
+- Auth hygiene: password min 10, login/register soft rate limit (429), DB `chmod 0600`
 
 ## Out of scope
 
