@@ -15,6 +15,10 @@ const links = [
   { href: "/export", label: "Export" },
 ];
 
+function initials(name: string) {
+  return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0] ?? "").join("").toUpperCase() || "C";
+}
+
 export function Nav({
   user,
 }: {
@@ -30,41 +34,58 @@ export function Nav({
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-3 py-2">
-        <Link href="/dashboard" className="text-base font-bold text-teal-700">
-          ClinicDesk
-        </Link>
-        <nav className="flex flex-wrap gap-1">
-          {links.map((l) => {
-            if (l.href === "/team" || l.href === "/export") {
-              if (user.role !== "owner") return null;
-            }
-            const active = pathname === l.href || pathname.startsWith(l.href + "/");
-            return (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={`rounded-md px-2 py-1 text-xs font-medium ${
-                  active
-                    ? "bg-teal-50 text-teal-800"
-                    : "text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                {l.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          <span>
-            {user.name} · {user.role}
-          </span>
-          <button type="button" onClick={logout} className="btn-secondary !py-1 !text-xs">
-            Logout
-          </button>
+    <>
+      <a className="skip-link" href="#main-content">Skip to main content</a>
+      <header className="site-header">
+        <div className="site-header-inner">
+          <Link href="/dashboard" className="brand-lockup" aria-label="ClinicDesk dashboard">
+            <span className="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 4v16M4 12h16" />
+                <circle cx="12" cy="12" r="9" />
+              </svg>
+            </span>
+            <span className="brand-copy">
+              <span className="brand-name">ClinicDesk</span>
+              <span className="brand-caption">APPOINTMENT FOLLOW-UP</span>
+            </span>
+          </Link>
+
+          <nav className="primary-nav" aria-label="Primary navigation">
+            {links.map((link) => {
+              if ((link.href === "/team" || link.href === "/export") && user.role !== "owner") return null;
+              const active = pathname === link.href || pathname.startsWith(link.href + "/");
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`nav-link${active ? " is-active" : ""}`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="user-actions">
+            <div className="user-profile" title={`${user.name} · ${user.role}`}>
+              <span className="user-avatar" aria-hidden="true">{initials(user.name)}</span>
+              <span className="user-meta">
+                <span className="user-name">{user.name}</span>
+                <span className="user-role">{user.role}</span>
+              </span>
+            </div>
+            <button type="button" onClick={logout} className="logout-button" aria-label="Log out">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M10 17l5-5-5-5M15 12H3" />
+                <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" />
+              </svg>
+              <span>Log out</span>
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }

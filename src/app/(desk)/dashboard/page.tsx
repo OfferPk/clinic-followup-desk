@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { getSessionUser } from "@/lib/auth";
 import { getDashboardStats } from "@/lib/appointments";
-import { STATUS_LABELS, STATUSES } from "@/lib/types";
+import { STATUS_LABELS, STATUSES, type AppointmentStatus } from "@/lib/types";
 import { OnboardingChecklist } from "@/components/OnboardingChecklist";
 
 export const dynamic = "force-dynamic";
+
+type StatTone = "amber" | "sky" | "rose" | "slate";
 
 export default async function DashboardPage() {
   const user = (await getSessionUser())!;
@@ -12,13 +14,22 @@ export default async function DashboardPage() {
   const showChecklist = stats.total === 0;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-bold text-slate-900">Dashboard</h1>
-        <Link href="/appointments/new" className="btn-primary">
-          + New appointment
+    <div className="dashboard-page">
+      <header className="dashboard-header">
+        <div>
+          <p className="dashboard-eyebrow">CLINIC OVERVIEW</p>
+          <h1>Dashboard</h1>
+          <p className="dashboard-subtitle">
+            Keep today&apos;s confirmations, reminders, and appointments moving from one calm workspace.
+          </p>
+        </div>
+        <Link href="/appointments/new" className="btn-primary dashboard-create">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          New appointment
         </Link>
-      </div>
+      </header>
 
       <OnboardingChecklist
         show={showChecklist}
@@ -26,57 +37,98 @@ export default async function DashboardPage() {
         isOwner={user.role === "owner"}
       />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard label="Confirm today" value={stats.confirm_today} href="/queues/confirm" tone="amber" />
-        <StatCard label="Remind 24h" value={stats.remind_24h} href="/queues/remind" tone="sky" />
-        <StatCard label="No-show open" value={stats.no_show_open} href="/queues/no-show" tone="rose" />
-        <StatCard label="Total" value={stats.total} href="/appointments" tone="slate" />
-      </div>
+      <section className="dashboard-stat-grid" aria-label="Appointment overview">
+        <StatCard
+          label="Confirm today"
+          value={stats.confirm_today}
+          href="/queues/confirm"
+          tone="amber"
+          symbol="✓"
+          detail="Appointments waiting for confirmation"
+        />
+        <StatCard
+          label="Remind in 24h"
+          value={stats.remind_24h}
+          href="/queues/remind"
+          tone="sky"
+          symbol="↻"
+          detail="Confirmed visits coming up"
+        />
+        <StatCard
+          label="No-show follow-up"
+          value={stats.no_show_open}
+          href="/queues/no-show"
+          tone="rose"
+          symbol="!"
+          detail="Visits that need another touch"
+        />
+        <StatCard
+          label="Total appointments"
+          value={stats.total}
+          href="/appointments"
+          tone="slate"
+          symbol="↗"
+          detail="Appointments in this desk"
+        />
+      </section>
 
-      <div className="card">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">By status</h2>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          {STATUSES.map((s) => (
+      <section className="dashboard-panel" aria-labelledby="pipeline-title">
+        <div className="panel-heading">
+          <div>
+            <p className="panel-kicker">WORKFLOW</p>
+            <h2 id="pipeline-title">Appointment pipeline</h2>
+          </div>
+          <Link href="/board" className="text-link">
+            Open status board <span aria-hidden="true">↗</span>
+          </Link>
+        </div>
+        <div className="pipeline-grid">
+          {STATUSES.map((status: AppointmentStatus) => (
             <Link
-              key={s}
-              href={`/board?status=${s}`}
-              className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-center hover:border-teal-200"
+              key={status}
+              href={`/board?status=${status}`}
+              className={`pipeline-item pipeline-${status}`}
+              aria-label={`${STATUS_LABELS[status]}: ${stats.counts[status]} appointments`}
             >
-              <div className="text-lg font-bold text-slate-900">{stats.counts[s]}</div>
-              <div className="text-xs text-slate-500">{STATUS_LABELS[s]}</div>
+              <span className="pipeline-status">{STATUS_LABELS[status]}</span>
+              <span className="pipeline-count">{stats.counts[status]}</span>
+              <span className="pipeline-cta">View appointments <span aria-hidden="true">→</span></span>
             </Link>
           ))}
         </div>
-      </div>
+      </section>
 
-      <p className="text-xs text-slate-400">
-        ClinicDesk is a follow-up desk — not an EMR. No medical records beyond the appointment reason string.
-      </p>
+      <aside className="dashboard-note" role="note">
+        <span className="note-icon" aria-hidden="true">i</span>
+        <div>
+          <strong>Appointment follow-up, with privacy in mind</strong>
+          <p>
+            ClinicDesk is not an EMR. It stores no medical charts or prescriptions; keep appointment reasons brief and appropriate for a follow-up desk.
+          </p>
+        </div>
+      </aside>
     </div>
   );
 }
 
-function StatCard({
-  label,
-  value,
-  href,
-  tone,
-}: {
+type StatCardProps = {
   label: string;
   value: number;
   href: string;
-  tone: string;
-}) {
-  const tones: Record<string, string> = {
-    amber: "border-amber-200 bg-amber-50 text-amber-900",
-    sky: "border-sky-200 bg-sky-50 text-sky-900",
-    rose: "border-rose-200 bg-rose-50 text-rose-900",
-    slate: "border-slate-200 bg-white text-slate-900",
-  };
+  tone: StatTone;
+  symbol: string;
+  detail: string;
+};
+
+function StatCard({ label, value, href, tone, symbol, detail }: StatCardProps) {
   return (
-    <Link href={href} className={`rounded-xl border p-3 ${tones[tone]}`}>
-      <div className="text-2xl font-bold">{value}</div>
-      <div className="text-xs font-medium opacity-80">{label}</div>
+    <Link href={href} className={`stat-card stat-card-${tone}`}>
+      <span className="stat-card-top">
+        {label}
+        <span className="stat-symbol" aria-hidden="true">{symbol}</span>
+      </span>
+      <span className="stat-value">{value.toLocaleString()}</span>
+      <span className="stat-detail">{detail}</span>
     </Link>
   );
 }

@@ -9,10 +9,13 @@ export default async function DeskLayout({
 }) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
+
   return (
     <div className="min-h-dvh">
       <Nav user={user} />
-      <main className="mx-auto max-w-6xl px-3 py-4">{children}</main>
+      <main id="main-content" className="app-main">
+        {children}
+      </main>
     </div>
   );
 }
