@@ -8,6 +8,13 @@ import {
   remindMessage,
   rebookMessage,
 } from "@/lib/phone";
+import styles from "./QueueList.module.css";
+
+const QUEUE_LABELS = {
+  confirm: "Appointments to confirm today",
+  remind: "Appointments to remind",
+  no_show: "No-show follow-up appointments",
+} as const;
 
 export function QueueList({
   appointments,
@@ -17,7 +24,7 @@ export function QueueList({
   mode: "confirm" | "remind" | "no_show";
 }) {
   return (
-    <div className="space-y-2">
+    <ul className={styles.list} aria-label={QUEUE_LABELS[mode]}>
       {appointments.map((a) => {
         const slotLabel = formatSlot(a.slot_start);
         const text =
@@ -29,31 +36,40 @@ export function QueueList({
         const label =
           mode === "no_show" ? "WA Rebook" : "Open WhatsApp";
         return (
-          <div
+          <li
             key={a.id}
-            className="card flex flex-wrap items-center justify-between gap-2 !py-3"
+            className={`${styles.card} ${styles[mode]}`}
           >
-            <div>
+            <div className={styles.details}>
               <Link
                 href={`/appointments/${a.id}`}
-                className="font-semibold hover:text-teal-700"
+                className={styles.patientLink}
               >
                 {a.patient_name}
               </Link>
-              <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+              <div className={styles.meta}>
                 <StatusBadge status={a.status} />
-                <span>{slotLabel}</span>
-                {a.doctor_name && <span>· {a.doctor_name}</span>}
-                {a.reason && <span>· {a.reason}</span>}
+                <span className={styles.slotLabel}>{slotLabel}</span>
+                {a.doctor_name && (
+                  <span className={styles.detail}>{a.doctor_name}</span>
+                )}
+                {a.reason && (
+                  <span className={styles.reason}>{a.reason}</span>
+                )}
               </div>
             </div>
-            <WhatsAppButton phone={a.phone} text={text} label={label} />
-          </div>
+            <div className={styles.action}>
+              <WhatsAppButton phone={a.phone} text={text} label={label} />
+            </div>
+          </li>
         );
       })}
       {appointments.length === 0 && (
-        <p className="text-sm text-slate-500">Queue empty — nice work.</p>
+        <li className={styles.empty}>
+          <span className={styles.emptyMark} aria-hidden="true">✓</span>
+          <span>Queue empty — nice work.</span>
+        </li>
       )}
-    </div>
+    </ul>
   );
 }
